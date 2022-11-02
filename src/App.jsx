@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import ImageCripto from "./assets/img/imagen-criptos.png";
 import Formulario from "./components/Formulario";
+import Resultado from "./components/Resultado";
 
 const Contenedor = styled.div`
   max-width: 900px;
@@ -15,10 +16,10 @@ const Contenedor = styled.div`
 `;
 
 const Imagen = styled.img`
-max-width: 400px;
-width: 80%;
-margin: 100px auto 0 auto;
-display: block;
+  max-width: 400px;
+  width: 80%;
+  margin: 100px auto 0 auto;
+  display: block;
 `;
 
 const Heading = styled.h1`
@@ -31,7 +32,7 @@ const Heading = styled.h1`
   font-size: 34px;
 
   &::after {
-    content: '';
+    content: "";
     width: 100px;
     height: 6px;
     background-color: #66a2fe;
@@ -40,33 +41,41 @@ const Heading = styled.h1`
   }
 `;
 
-
 // End Style Components
 
 function App() {
-
-  const [ monedas, setMonedas ] = useState({})
+  const [monedas, setMonedas] = useState({});
+  const [resultado, setResultado] = useState({});
 
   useEffect(() => {
-    if(Object.keys(monedas).length > 0) {
-      console.log(monedas)
+    if (Object.keys(monedas).length > 0) {
+      const cotizarCripto = async () => {
+        const { moneda, criptomoneda } = monedas;
+
+        const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`;
+
+        const respuesta = await fetch(url)
+        const resultado = await respuesta.json()
+
+        setResultado(resultado.DISPLAY[criptomoneda][moneda])
+      };
+      cotizarCripto()
     }
-  }, [monedas])
+  }, [monedas]);
 
   return (
     <Contenedor>
-      <Imagen 
-        src={ImageCripto} 
-        alt="Imagenes criptomonedas"   
-      />
+      <Imagen src={ImageCripto} alt="Imagenes criptomonedas" />
 
       <div>
         <Heading>Cotiza Criptomonedas al Instante</Heading>
-        <Formulario
-          setMonedas={setMonedas}
-        />
-      </div>
+        <Formulario setMonedas={setMonedas} />
 
+        {resultado.PRICE && 
+        <Resultado 
+          resultado={resultado}
+        />}
+      </div>
     </Contenedor>
   );
 }
